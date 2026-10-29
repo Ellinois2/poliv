@@ -1,0 +1,1351 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Полив и подкормка — прототип</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1F5A3A}a:hover{color:#15211A}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:disabled{cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid #7FB896;outline-offset:2px}
+.pf-input::placeholder{color:#808C83}
+@keyframes pfPulse{0%{transform:scale(1);opacity:.45}100%{transform:scale(1.8);opacity:0}}
+@keyframes pfBar{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes pfUp{from{transform:translateY(32px);opacity:0}to{transform:none;opacity:1}}
+@keyframes pfFade{from{opacity:0}to{opacity:1}}
+.pf-pulse{animation:pfPulse 1.6s ease-out infinite}
+.pf-bar{animation:pfBar .9s ease-in-out infinite}
+.pf-sheet{animation:pfUp .24s ease-out}
+.pf-fade{animation:pfFade .2s ease-out}
+.pf-scroll{scrollbar-width:none}
+.pf-scroll::-webkit-scrollbar{display:none}
+@media (prefers-reduced-motion: reduce){.pf-pulse,.pf-bar,.pf-sheet,.pf-fade{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: {{t.bg}}; font-family: 'Manrope', system-ui, sans-serif; color: {{t.ink}};">
+
+<sc-if value="{{ isHub }}" hint-placeholder-val="{{ true }}">
+<main class="pf-scroll pf-fade" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; box-sizing: border-box; padding: 56px 20px 104px; display: flex; flex-direction: column; gap: 22px;">
+<header style="display: flex; flex-direction: column; gap: 4px;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em;">Мои растения</h1>
+<div style="display: flex; gap: 8px;">
+<button onClick="{{ goAdd }}" aria-label="Добавить растение" style="width: 44px; height: 44px; flex: none; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+<button onClick="{{ goSettings }}" aria-label="Настройки и аккаунт" style="width: 44px; height: 44px; flex: none; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"></path><circle cx="15" cy="7" r="2"></circle><circle cx="9" cy="17" r="2"></circle></svg></button>
+</div>
+</div>
+<p style="margin: 0; font-size: 15px; font-weight: 600; color: {{t.muted}};">{{hub.count}}</p>
+</header>
+<div style="display: flex; flex-direction: column; gap: 12px;">
+<sc-for list="{{ hub.tiles }}" as="tl" hint-placeholder-count="2">
+<button onClick="{{ tl.go }}" style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 18px 18px 20px; border-radius: 24px; border: 1px solid {{tl.bd}}; background: {{tl.t.surface}}; color: {{tl.t.ink}}; text-align: left;">
+<span style="display: flex; align-items: center; gap: 12px; width: 100%;">
+<span style="width: 44px; height: 44px; flex: none; border-radius: 22px; background: {{tl.t.accentSoft}}; color: {{tl.t.accentText}}; display: flex; align-items: center; justify-content: center;">
+<sc-if value="{{ tl.isWater }}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c-3.5 4.2-6 7.6-6 10.5a6 6 0 0 0 12 0c0-2.9-2.5-6.3-6-10.5z"></path></svg></sc-if>
+<sc-if value="{{ tl.isFeed }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 12c0-4.4 3-7 8-7 0 4.4-3 7-8 7z"></path><path d="M12 14.5C12 11 9.6 9 5.5 9c0 3.5 2.4 5.5 6.5 5.5z"></path></svg></sc-if>
+</span>
+<span style="flex: 1; font-size: 20px; font-weight: 800;">{{tl.title}}</span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: {{tl.t.muted}};"><path d="M9 5l7 7-7 7"></path></svg>
+</span>
+<sc-if value="{{ tl.hasBig }}" hint-placeholder-val="{{ true }}">
+<span style="display: flex; align-items: baseline; gap: 10px;">
+<span style="font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -0.03em;">{{tl.big}}</span>
+<span style="font-size: 16px; font-weight: 600; color: {{tl.t.muted}};">{{tl.bigLabel}}</span>
+</span>
+</sc-if>
+<sc-if value="{{ tl.noBig }}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 26px; line-height: 1.2; font-weight: 800;">{{tl.doneText}}</span>
+</sc-if>
+<sc-if value="{{ tl.hasOverdue }}" hint-placeholder-val="{{ false }}">
+<span style="align-self: flex-start; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 16px; background: {{tl.t.orangeSoft}}; color: {{tl.t.orangeInk}}; font-size: 14px; font-weight: 800;"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 4px; background: {{tl.t.orange}};"></span>{{tl.overdueText}}</span>
+</sc-if>
+<sc-if value="{{ tl.hasSegs }}" hint-placeholder-val="{{ true }}">
+<span aria-hidden="true" style="display: flex; gap: 6px; width: 100%;">
+<sc-for list="{{ tl.segments }}" as="sg" hint-placeholder-count="4">
+<span style="flex: 1; height: 8px; border-radius: 4px; background: {{sg.bg}};"></span>
+</sc-for>
+</span>
+</sc-if>
+</button>
+</sc-for>
+</div>
+</main>
+</sc-if>
+
+<sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+<main class="pf-scroll pf-fade" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; box-sizing: border-box; padding: 56px 20px 104px; display: flex; flex-direction: column; gap: 26px;">
+<header style="display: flex; flex-direction: column; gap: 12px;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<button onClick="{{ goHub }}" style="height: 44px; padding: 0 16px 0 10px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>Главная</button>
+<button onClick="{{ goAdd }}" aria-label="Добавить растение" style="width: 44px; height: 44px; flex: none; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; margin-top: 6px; color: {{t.accentText}};">
+<sc-if value="{{ ls.isWater }}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c-3.5 4.2-6 7.6-6 10.5a6 6 0 0 0 12 0c0-2.9-2.5-6.3-6-10.5z"></path></svg></sc-if>
+<sc-if value="{{ ls.isFeed }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 12c0-4.4 3-7 8-7 0 4.4-3 7-8 7z"></path><path d="M12 14.5C12 11 9.6 9 5.5 9c0 3.5 2.4 5.5 6.5 5.5z"></path></svg></sc-if>
+<span style="font-size: 13px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;">{{ls.title}}</span>
+</div>
+<h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em;">{{ls.headline}}</h1>
+<p style="margin: 0; font-size: 15px; font-weight: 600; color: {{t.muted}};">{{ls.subline}}</p>
+<div aria-hidden="true" style="display: flex; gap: 6px; margin-top: 2px;">
+<sc-for list="{{ ls.segments }}" as="sg" hint-placeholder-count="4">
+<div style="flex: 1; height: 8px; border-radius: 4px; background: {{sg.bg}};"></div>
+</sc-for>
+</div>
+</header>
+
+<sc-for list="{{ ls.sections }}" as="sec" hint-placeholder-count="3">
+<section style="display: flex; flex-direction: column; gap: 8px;">
+<sc-if value="{{ sec.isPlain }}" hint-placeholder-val="{{ true }}">
+<h2 style="margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{sec.muted}};">{{sec.title}}</h2>
+</sc-if>
+<sc-if value="{{ sec.isColl }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ sec.toggle }}" aria-expanded="{{ sec.open }}" style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: {{sec.muted}}; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; text-align: left;">
+<span>{{sec.title}}</span>
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{sec.rot}}deg); transition: transform 0.2s;"><path d="M6 9l6 6 6-6"></path></svg>
+</button>
+</sc-if>
+<sc-if value="{{ sec.showItems }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<sc-for list="{{ sec.items }}" as="p" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 4px; background: {{p.t.surface}}; border-radius: 18px; padding: 6px 8px 6px 6px; border: 1px solid {{p.border}};">
+<button onClick="{{ p.open }}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; background: transparent; border: 0; padding: 6px; text-align: left; color: {{p.t.ink}}; border-radius: 12px;">
+<span style="width: 48px; height: 48px; flex: none; border-radius: 24px; background: {{p.tint}}; display: flex; align-items: center; justify-content: center; color: {{p.t.accentText}};"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14h10l-1.2 6.2a1 1 0 0 1-1 .8H9.2a1 1 0 0 1-1-.8z"></path><path d="M12 14V9.5"></path><path d="M12 10c0-3 2-5 5.5-5 0 3-2 5-5.5 5z"></path><path d="M12 11.5C12 9 10.4 7.5 7 7.5c0 2.5 1.6 4 5 4z"></path></svg></span>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+<span style="font-size: 16px; font-weight: 700; line-height: 1.25;">{{p.name}}</span>
+<span style="font-size: 14px; font-weight: 500; line-height: 1.3; color: {{p.subColor}};">{{p.sub}}</span>
+</span>
+</button>
+<sc-if value="{{ p.done }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ p.toggle }}" aria-label="{{p.actLabel}}" style="width: 48px; height: 48px; flex: none; border-radius: 24px; border: 0; padding: 0; background: {{p.t.accentBtn}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></button>
+</sc-if>
+<sc-if value="{{ p.notDone }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ p.toggle }}" aria-label="{{p.actLabel}}" style="width: 48px; height: 48px; flex: none; border-radius: 24px; border: 1.5px solid {{p.t.checkBd}}; padding: 0; background: {{p.t.surface}}; color: {{p.t.accentText}}; display: flex; align-items: center; justify-content: center;">
+<sc-if value="{{ p.isWater }}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c-3.5 4.2-6 7.6-6 10.5a6 6 0 0 0 12 0c0-2.9-2.5-6.3-6-10.5z"></path></svg></sc-if>
+<sc-if value="{{ p.isFeed }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 12c0-4.4 3-7 8-7 0 4.4-3 7-8 7z"></path><path d="M12 14.5C12 11 9.6 9 5.5 9c0 3.5 2.4 5.5 6.5 5.5z"></path></svg></sc-if>
+</button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</section>
+</sc-for>
+</main>
+</sc-if>
+
+<sc-if value="{{ showBar }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div role="status" class="pf-fade" style="position: absolute; left: 20px; right: 20px; bottom: 96px; display: flex; align-items: center; gap: 8px; min-height: 56px; box-sizing: border-box; background: {{t.toastBg}}; color: {{t.toastFg}}; border-radius: 16px; padding: 6px 6px 6px 16px; box-shadow: {{t.shadow}};">
+<span style="flex: 1; font-size: 14px; font-weight: 600; line-height: 1.35; padding: 6px 0;">{{toastText}}</span>
+<sc-if value="{{ hasUndo }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ undo }}" style="height: 44px; flex: none; padding: 0 14px; border: 0; border-radius: 12px; background: transparent; color: {{t.toastAct}}; font-size: 14px; font-weight: 800;">Отменить</button>
+</sc-if>
+</div>
+</sc-if>
+<button onClick="{{ startVoice }}" aria-label="{{voiceLabel}}" style="position: absolute; right: 20px; bottom: 28px; width: 56px; height: 56px; border-radius: 28px; border: 0; padding: 0; background: {{t.accentBtn}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; box-shadow: {{t.shadow}};"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"></path><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg></button>
+</sc-if>
+
+<sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+<div class="pf-fade" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: {{t.bg}};">
+<main class="pf-scroll" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; box-sizing: border-box; padding: 56px 20px 130px; display: flex; flex-direction: column; gap: 24px;">
+<header style="display: flex; align-items: center; gap: 12px;">
+<button onClick="{{ cancelAdd }}" aria-label="Закрыть без сохранения" style="width: 44px; height: 44px; flex: none; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+<h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em;">Новое растение</h1>
+</header>
+
+<div style="display: flex; gap: 14px; align-items: flex-start;">
+<button aria-label="Добавить фото (необязательно)" style="position: relative; width: 88px; height: 88px; flex: none; border-radius: 44px; border: 0; background: {{form.photoTint}}; color: {{t.accentText}}; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14h10l-1.2 6.2a1 1 0 0 1-1 .8H9.2a1 1 0 0 1-1-.8z"></path><path d="M12 14V9.5"></path><path d="M12 10c0-3 2-5 5.5-5 0 3-2 5-5.5 5z"></path><path d="M12 11.5C12 9 10.4 7.5 7 7.5c0 2.5 1.6 4 5 4z"></path></svg><span aria-hidden="true" style="position: absolute; right: -2px; bottom: -2px; width: 32px; height: 32px; box-sizing: border-box; border-radius: 16px; border: 2px solid {{t.bg}}; background: {{t.accentBtn}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg></span></button>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+<label for="pf-name" style="font-size: 14px; font-weight: 700; color: {{t.muted}};">Название</label>
+<input id="pf-name" class="pf-input" type="text" autocomplete="off" value="{{ form.name }}" onChange="{{ form.onName }}" placeholder="Например, Монстера" style="width: 100%; height: 52px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid {{form.nameBd}}; background: {{t.surface}}; color: {{t.ink}}; padding: 0 14px; font-family: inherit; font-size: 16px; font-weight: 600;">
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">Так растение будет называться в списке и голосом.</p>
+</div>
+</div>
+<sc-if value="{{ form.hasWarn }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="margin-top: -10px; padding: 12px 14px; border-radius: 14px; background: {{t.orangeSoft}}; color: {{t.orangeInk}}; font-size: 14px; line-height: 1.4; font-weight: 600;">{{form.warn}}</div>
+</sc-if>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Полив</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0;">
+<span style="font-size: 16px; font-weight: 600;">Поливать раз в</span>
+<div style="display: flex; align-items: center; gap: 4px;">
+<button onClick="{{ form.dec }}" aria-label="Уменьшить интервал полива" style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<span style="min-width: 74px; text-align: center; font-size: 16px; font-weight: 800;">{{form.intervalText}}</span>
+<button onClick="{{ form.inc }}" aria-label="Увеличить интервал полива" style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 0 0 14px;">
+<sc-for list="{{ form.presets }}" as="c" hint-placeholder-count="4">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 2px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 700; white-space: nowrap;">{{c.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Когда поливали последний раз</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{ form.lastOptions }}" as="c" hint-placeholder-count="4">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700;">{{c.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{form.lastHelp}}</p>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Подкормка</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0;">
+<span style="font-size: 16px; font-weight: 600;">Подкармливать</span>
+<button role="switch" aria-checked="{{ form.feedOn }}" aria-label="Подкармливать" onClick="{{ form.toggleFeed }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{form.feedSw.track}}; display: flex; align-items: center; justify-content: {{form.feedSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<sc-if value="{{ form.feedOn }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Раз в</span>
+<div style="display: flex; align-items: center; gap: 4px;">
+<button onClick="{{ form.fdec }}" aria-label="Уменьшить интервал подкормки" style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<span style="min-width: 86px; text-align: center; font-size: 16px; font-weight: 800;">{{form.weeksText}}</span>
+<button onClick="{{ form.finc }}" aria-label="Увеличить интервал подкормки" style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Сезон</span>
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: {{t.soft}};">
+<sc-for list="{{ form.seasonOptions }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.pick }}" aria-pressed="{{ o.selected }}" style="flex: 1; min-height: 44px; padding: 6px 8px; border-radius: 10px; border: 0; background: {{o.bg}}; color: {{o.fg}}; box-shadow: {{o.shadow}}; font-size: 14px; line-height: 1.25; font-weight: 700;">{{o.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{form.feedHelp}}</p>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Напоминания</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px 14px; display: flex; flex-direction: column; gap: 2px;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 8px;">
+<span style="font-size: 16px; font-weight: 600;">Напоминать</span>
+<button role="switch" aria-checked="{{ form.remind }}" aria-label="Напоминать" onClick="{{ form.toggleRemind }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{form.remindSw.track}}; display: flex; align-items: center; justify-content: {{form.remindSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{form.remindHelp}}</p>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Где стоит · необязательно</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{ form.rooms }}" as="c" hint-placeholder-count="7">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700;">{{c.label}}</button>
+</sc-for>
+<button style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px dashed {{t.ctrlBd}}; background: transparent; color: {{t.muted}}; font-size: 14px; font-weight: 700;">+ Новое место</button>
+</div>
+</section>
+</main>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 20px 28px; background: {{t.bg}}; border-top: 1px solid {{t.line}};">
+<button onClick="{{ form.submit }}" disabled="{{ form.disabled }}" style="width: 100%; height: 60px; border-radius: 30px; border: 0; background: {{form.btnBg}}; color: {{form.btnFg}}; font-size: 17px; font-weight: 700;">{{form.btnLabel}}</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<main class="pf-scroll pf-fade" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; box-sizing: border-box; padding: 56px 20px 40px; display: flex; flex-direction: column; gap: 24px; background: {{t.bg}};">
+<header style="display: flex; flex-direction: column; gap: 16px; align-items: flex-start;">
+<button onClick="{{ goHub }}" style="height: 44px; padding: 0 16px 0 10px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 700;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>Главная</button>
+<h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em;">Настройки</h1>
+</header>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Аккаунт</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+<div style="display: flex; align-items: center; gap: 14px;">
+<span style="width: 52px; height: 52px; flex: none; border-radius: 26px; background: {{t.accentSoft}}; color: {{t.accentText}}; display: flex; align-items: center; justify-content: center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+<span style="font-size: 17px; font-weight: 800;">Вы не вошли</span>
+<span style="font-size: 14px; line-height: 1.4; color: {{t.muted}};">Растения и история хранятся только на этом телефоне.</span>
+</div>
+</div>
+<button style="height: 48px; border-radius: 24px; border: 0; background: {{t.accentBtn}}; color: #FFFFFF; font-size: 16px; font-weight: 700;">Войти и включить синхронизацию</button>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Уведомления</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0;">
+<span style="font-size: 16px; font-weight: 600;">Присылать уведомления</span>
+<button role="switch" aria-checked="{{ st.notif }}" aria-label="Присылать уведомления" onClick="{{ st.toggleNotif }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{st.notifSw.track}}; display: flex; align-items: center; justify-content: {{st.notifSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<sc-if value="{{ st.notif }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Утренняя сводка</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{ st.digestOptions }}" as="c" hint-placeholder-count="3">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700;">{{c.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">Одно уведомление со всем, что нужно полить и подкормить сегодня.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0 14px; border-top: 1px solid {{t.line}};">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<span style="font-size: 16px; font-weight: 600;">Напомнить вечером о пропущенном</span>
+<button role="switch" aria-checked="{{ st.evening }}" aria-label="Напомнить вечером о пропущенном" onClick="{{ st.toggleEvening }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{st.eveningSw.track}}; display: flex; align-items: center; justify-content: {{st.eveningSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">В 20:00, только если что-то осталось неотмеченным.</p>
+</div>
+<button style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 0; border: 0; border-top: 1px solid {{t.line}}; background: transparent; color: {{t.ink}}; text-align: left;">
+<span style="font-size: 16px; font-weight: 600;">Тихие часы</span>
+<span style="display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; color: {{t.muted}};">22:00 – 08:00<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></span>
+</button>
+</sc-if>
+<sc-if value="{{ st.notifOff }}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; padding: 0 0 14px; font-size: 13px; line-height: 1.4; color: {{t.muted}};">Все напоминания выключены. Списки на главной продолжат работать.</p>
+</sc-if>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Голос</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0 14px;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<span style="font-size: 16px; font-weight: 600;">Сохранять сразу, если всё понятно</span>
+<button role="switch" aria-checked="{{ st.autoSave }}" aria-label="Сохранять сразу, если всё понятно" onClick="{{ st.toggleAuto }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{st.autoSw.track}}; display: flex; align-items: center; justify-content: {{st.autoSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{st.autoHelp}}</p>
+</div>
+<button style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 0; border: 0; border-top: 1px solid {{t.line}}; background: transparent; color: {{t.ink}}; text-align: left;">
+<span style="font-size: 16px; font-weight: 600;">Язык распознавания</span>
+<span style="display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; color: {{t.muted}};">Русский<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></span>
+</button>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Оформление</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+<span style="font-size: 16px; font-weight: 600;">Тема</span>
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: {{t.soft}};">
+<sc-for list="{{ st.themeOptions }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" aria-pressed="{{ o.selected }}" style="flex: 1; min-height: 44px; padding: 6px 6px; border-radius: 10px; border: 0; background: {{o.bg}}; color: {{o.fg}}; box-shadow: {{o.shadow}}; font-size: 14px; line-height: 1.25; font-weight: 700;">{{o.label}}</button>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Растения и данные</h2>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<button style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 0; border: 0; background: transparent; color: {{t.ink}}; text-align: left;">
+<span style="font-size: 16px; font-weight: 600;">Места</span>
+<span style="display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; color: {{t.muted}};">{{st.roomsCount}}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></span>
+</button>
+<button style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding: 0; border: 0; border-top: 1px solid {{t.line}}; background: transparent; color: {{t.ink}}; text-align: left;">
+<span style="font-size: 16px; font-weight: 600;">Экспорт истории</span>
+<span style="display: flex; align-items: center; gap: 4px; font-size: 15px; font-weight: 600; color: {{t.muted}};">CSV<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></span>
+</button>
+</div>
+</section>
+</main>
+</sc-if>
+
+<sc-if value="{{ voiceOpen }}" hint-placeholder-val="{{ false }}">
+<div class="pf-fade" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+<button onClick="{{ closeVoice }}" aria-label="Закрыть голосовой ввод" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; padding: 0; background: {{t.scrim}};"></button>
+<div class="pf-sheet" role="dialog" aria-label="Голосовой ввод" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 800px; overflow-y: auto; box-sizing: border-box; background: {{t.surface}}; border-radius: 28px 28px 0 0; padding: 10px 20px 32px; display: flex; flex-direction: column; gap: 18px;">
+<div aria-hidden="true" style="width: 40px; height: 5px; flex: none; border-radius: 3px; background: {{t.handle}}; align-self: center;"></div>
+
+<sc-if value="{{ listening }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 4px;">
+<p style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Слушаю</p>
+<div style="position: relative; width: 96px; height: 96px;">
+<span class="pf-pulse" aria-hidden="true" style="position: absolute; top: 0; left: 0; width: 96px; height: 96px; border-radius: 48px; background: {{t.accentBtn}};"></span>
+<span style="position: absolute; top: 0; left: 0; width: 96px; height: 96px; border-radius: 48px; background: {{t.accentBtn}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"></path><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg></span>
+</div>
+<div aria-hidden="true" style="display: flex; align-items: center; gap: 4px; height: 36px;">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="22">
+<span class="pf-bar" style="display: block; width: 4px; height: {{b.h}}px; border-radius: 2px; background: {{b.c}}; animation-delay: {{b.d}}ms;"></span>
+</sc-for>
+</div>
+<p aria-live="polite" style="margin: 0; min-height: 64px; font-size: 24px; line-height: 1.3; font-weight: 700; text-align: center; color: {{transcriptColor}};">{{transcriptShown}}</p>
+<p style="margin: 0; font-size: 14px; line-height: 1.45; color: {{t.muted}}; text-align: center;">{{voiceHint}}</p>
+<div style="display: flex; gap: 12px; width: 100%;">
+<button onClick="{{ closeVoice }}" style="flex: 1; height: 56px; border-radius: 28px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; font-size: 16px; font-weight: 700;">Отмена</button>
+<button onClick="{{ finishListening }}" style="flex: 1; height: 56px; border-radius: 28px; border: 0; background: {{t.ink}}; color: {{t.bg}}; font-size: 16px; font-weight: 700;">Готово</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ reviewing }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<h2 style="margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em;">Проверьте, что отметить</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.4; color: {{t.muted}};">«{{transcriptFull}}»</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<sc-for list="{{ reviewItems }}" as="r" hint-placeholder-count="2">
+<button onClick="{{ r.toggle }}" aria-pressed="{{ r.checked }}" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; border: 1.5px solid {{r.bd}}; background: {{r.bg}}; color: {{r.ink}}; text-align: left;">
+<span style="width: 40px; height: 40px; flex: none; border-radius: 20px; background: {{r.tint}}; display: flex; align-items: center; justify-content: center; color: {{r.ac}};"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14h10l-1.2 6.2a1 1 0 0 1-1 .8H9.2a1 1 0 0 1-1-.8z"></path><path d="M12 14V9.5"></path><path d="M12 10c0-3 2-5 5.5-5 0 3-2 5-5.5 5z"></path><path d="M12 11.5C12 9 10.4 7.5 7 7.5c0 2.5 1.6 4 5 4z"></path></svg></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+<span style="font-size: 16px; font-weight: 700;">{{r.name}}</span>
+<span style="font-size: 14px; font-weight: 500; color: {{r.muted}};">{{r.sub}}</span>
+</span>
+<span style="width: 26px; height: 26px; flex: none; box-sizing: border-box; border-radius: 8px; border: 2px solid {{r.boxBd}}; background: {{r.boxBg}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{ hasAmb }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: {{t.orangeSoft}};">
+<p style="margin: 0; font-size: 15px; line-height: 1.35; font-weight: 700; color: {{t.orangeInk}};">{{ambQ}}</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{ ambOptions }}" as="c" hint-placeholder-count="3">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700;">{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+<div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+<span style="font-size: 14px; font-weight: 700; color: {{t.muted}}; margin-right: 4px;">Когда</span>
+<sc-for list="{{ whenOptions }}" as="c" hint-placeholder-count="3">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700;">{{c.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 12px;">
+<button onClick="{{ startVoice }}" style="height: 56px; flex: none; padding: 0 18px; border-radius: 28px; border: 1.5px solid {{t.ctrlBd}}; background: {{t.surface}}; color: {{t.ink}}; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"></path><path d="M5 11a7 7 0 0 0 14 0"></path><path d="M12 18v3"></path></svg>Заново</button>
+<button onClick="{{ confirmReview }}" disabled="{{ confirmDisabled }}" style="flex: 1; height: 56px; border-radius: 28px; border: 0; background: {{confirmBg}}; color: {{confirmFg}}; font-size: 16px; font-weight: 700;">{{confirmLabel}}</button>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ cardOpen }}" hint-placeholder-val="{{ false }}">
+<div class="pf-fade" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+<button onClick="{{ closeCard }}" aria-label="Закрыть карточку" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; padding: 0; background: {{t.scrim}};"></button>
+<div class="pf-sheet pf-scroll" role="dialog" aria-label="{{card.name}}" style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 800px; overflow-y: auto; box-sizing: border-box; background: {{t.bg}}; border-radius: 28px 28px 0 0; padding: 10px 20px 36px; display: flex; flex-direction: column; gap: 18px;">
+<div aria-hidden="true" style="width: 40px; height: 5px; flex: none; border-radius: 3px; background: {{t.handle}}; align-self: center;"></div>
+
+<div style="display: flex; align-items: center; gap: 14px;">
+<span style="width: 60px; height: 60px; flex: none; border-radius: 30px; background: {{card.tint}}; display: flex; align-items: center; justify-content: center; color: {{t.accentText}};"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 14h10l-1.2 6.2a1 1 0 0 1-1 .8H9.2a1 1 0 0 1-1-.8z"></path><path d="M12 14V9.5"></path><path d="M12 10c0-3 2-5 5.5-5 0 3-2 5-5.5 5z"></path><path d="M12 11.5C12 9 10.4 7.5 7 7.5c0 2.5 1.6 4 5 4z"></path></svg></span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+<h2 style="margin: 0; font-size: 24px; line-height: 1.2; font-weight: 800; letter-spacing: -0.01em;">{{card.name}}</h2>
+<p style="margin: 0; font-size: 15px; font-weight: 500; color: {{t.muted}};">{{card.place}}</p>
+</div>
+<button onClick="{{ closeCard }}" aria-label="Закрыть" style="width: 44px; height: 44px; flex: none; border-radius: 22px; border: 0; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: {{t.soft}};">
+<sc-for list="{{ card.tabs }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.pick }}" aria-pressed="{{ o.selected }}" style="flex: 1; min-height: 44px; padding: 6px 8px; border-radius: 10px; border: 0; background: {{o.bg}}; color: {{o.fg}}; box-shadow: {{o.shadow}}; font-size: 15px; font-weight: 700;">{{o.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+<div style="background: {{t.surface}}; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 13px; font-weight: 600; color: {{t.muted}};">{{card.lastTitle}}</span>
+<span style="font-size: 22px; line-height: 1.2; font-weight: 800;">{{card.lastValue}}</span>
+<span style="font-size: 13px; font-weight: 500; color: {{t.muted}};">{{card.lastSub}}</span>
+</div>
+<div style="background: {{t.surface}}; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 13px; font-weight: 600; color: {{t.muted}};">Следующая</span>
+<span style="font-size: 22px; line-height: 1.2; font-weight: 800; color: {{card.nextColor}};">{{card.nextValue}}</span>
+<span style="font-size: 13px; font-weight: 500; color: {{card.nextSubColor}};">{{card.nextSub}}</span>
+</div>
+</div>
+
+<button onClick="{{ card.mark }}" style="height: 52px; flex: none; border-radius: 26px; border: 1.5px solid {{card.markBd}}; background: {{card.markBg}}; color: {{card.markFg}}; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+<sc-if value="{{ card.isWater }}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c-3.5 4.2-6 7.6-6 10.5a6 6 0 0 0 12 0c0-2.9-2.5-6.3-6-10.5z"></path></svg></sc-if>
+<sc-if value="{{ card.isFeed }}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 12c0-4.4 3-7 8-7 0 4.4-3 7-8 7z"></path><path d="M12 14.5C12 11 9.6 9 5.5 9c0 3.5 2.4 5.5 6.5 5.5z"></path></svg></sc-if>
+{{card.markLabel}}
+</button>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h3 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Расписание</h3>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<sc-if value="{{ card.isFeed }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0;">
+<span style="font-size: 16px; font-weight: 600;">Подкармливать</span>
+<button role="switch" aria-checked="{{ card.feedOn }}" aria-label="Подкармливать" onClick="{{ card.toggleFeed }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{card.feedSw.track}}; display: flex; align-items: center; justify-content: {{card.feedSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+</sc-if>
+<sc-if value="{{ card.showStepper }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid {{card.stepLine}};">
+<span style="font-size: 16px; font-weight: 600;">{{card.stepLabel}}</span>
+<div style="display: flex; align-items: center; gap: 4px;">
+<button onClick="{{ card.dec }}" aria-label="Уменьшить интервал" style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+<span style="min-width: 86px; text-align: center; font-size: 16px; font-weight: 800;">{{card.stepText}}</span>
+<button onClick="{{ card.inc }}" aria-label="Увеличить интервал" style="width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid {{t.ctrlBd}}; padding: 0; background: {{t.surface}}; color: {{t.ink}}; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ card.isWater }}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 0 0 14px;">
+<sc-for list="{{ card.presets }}" as="c" hint-placeholder-count="4">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 2px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 700; white-space: nowrap;">{{c.label}}</button>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Отсчитывать срок</span>
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: {{t.soft}};">
+<sc-for list="{{ card.fromOptions }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.pick }}" aria-pressed="{{ o.selected }}" style="flex: 1; min-height: 44px; padding: 6px 8px; border-radius: 10px; border: 0; background: {{o.bg}}; color: {{o.fg}}; box-shadow: {{o.shadow}}; font-size: 14px; line-height: 1.25; font-weight: 700;">{{o.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{card.fromHelp}}</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0 14px; border-top: 1px solid {{t.line}};">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<span style="font-size: 16px; font-weight: 600;">Зимой поливать реже</span>
+<button role="switch" aria-checked="{{ card.winter }}" aria-label="Зимой поливать реже" onClick="{{ card.toggleWinter }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{card.winterSw.track}}; display: flex; align-items: center; justify-content: {{card.winterSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{card.winterHelp}}</p>
+</div>
+</sc-if>
+<sc-if value="{{ card.isFeedOn }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Сезон</span>
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: {{t.soft}};">
+<sc-for list="{{ card.seasonOptions }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.pick }}" aria-pressed="{{ o.selected }}" style="flex: 1; min-height: 44px; padding: 6px 8px; border-radius: 10px; border: 0; background: {{o.bg}}; color: {{o.fg}}; box-shadow: {{o.shadow}}; font-size: 14px; line-height: 1.25; font-weight: 700;">{{o.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{card.seasonHelp}}</p>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h3 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">Напоминания</h3>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0;">
+<span style="font-size: 16px; font-weight: 600;">{{card.remindTitle}}</span>
+<button role="switch" aria-checked="{{ card.remind }}" aria-label="{{card.remindTitle}}" onClick="{{ card.toggleRemind }}" style="width: 56px; height: 44px; flex: none; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span style="width: 52px; height: 32px; box-sizing: border-box; padding: 3px; border-radius: 16px; background: {{card.remindSw.track}}; display: flex; align-items: center; justify-content: {{card.remindSw.justify}};"><span style="width: 26px; height: 26px; border-radius: 13px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(21, 33, 26, 0.25);"></span></span></button>
+</div>
+<sc-if value="{{ card.remind }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px solid {{t.line}};">
+<span style="font-size: 16px; font-weight: 600;">Как присылать</span>
+<div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: {{t.soft}};">
+<sc-for list="{{ card.deliveryOptions }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.pick }}" aria-pressed="{{ o.selected }}" style="flex: 1; min-height: 44px; padding: 6px 8px; border-radius: 10px; border: 0; background: {{o.bg}}; color: {{o.fg}}; box-shadow: {{o.shadow}}; font-size: 14px; line-height: 1.25; font-weight: 700;">{{o.label}}</button>
+</sc-for>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 1.4; color: {{t.muted}};">{{card.deliveryHelp}}</p>
+<sc-if value="{{ card.separate }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<sc-for list="{{ card.timeOptions }}" as="c" hint-placeholder-count="4">
+<button onClick="{{ c.pick }}" aria-pressed="{{ c.selected }}" style="min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700;">{{c.label}}</button>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ card.globalOff }}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; font-size: 13px; line-height: 1.4; font-weight: 700; color: {{t.orange}};">Уведомления выключены в настройках приложения.</p>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ card.remindOff }}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; padding: 0 0 14px; font-size: 13px; line-height: 1.4; color: {{t.muted}};">Уведомлений не будет, но растение останется в списке.</p>
+</sc-if>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<h3 style="margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: {{t.muted}};">{{card.histTitle}}</h3>
+<div style="background: {{t.surface}}; border-radius: 20px; padding: 2px 16px; display: flex; flex-direction: column;">
+<sc-for list="{{ card.history }}" as="h" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid {{h.line}};">
+<span style="font-size: 15px; font-weight: 700; color: {{h.ink}};">{{h.date}}</span>
+<span style="font-size: 14px; font-weight: 500; color: {{h.muted}};">{{h.src}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#1F5A3A","options":["#1F5A3A","#1E4F7A","#5B3F8C","#15211A"]},"voiceScenario":{"editor":"enum","options":["С уточнением","Всё понятно"],"default":"С уточнением"},"startScreen":{"editor":"enum","options":["Главная","Полив","Подкормка","Добавление","Настройки"],"default":"Главная"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // id, название, место, полив раз в N дней, дней с полива, цвет, подкормка раз в N недель, дней с подкормки, сезон, особые настройки
+    var list = [
+      ['monstera', 'Монстера', 'Гостиная', 7, 9, '#DCEBDF', 2, 40, 'warm', {}],
+      ['ficusB', 'Фикус Бенджамина', 'Спальня', 7, 7, '#E3ECD3', 3, 45, 'warm', {}],
+      ['ficusL', 'Фикус лировидный', 'Кухня', 5, 5, '#D8E9E4', 3, 24, 'all', { winter: true }],
+      ['calathea', 'Калатея', 'Ванная', 4, 4, '#ECE5D3', 2, 38, 'warm', {}],
+      ['spath', 'Спатифиллум', 'Гостиная', 5, 4, '#DCE5EF', 2, 14, 'all', {}],
+      ['sans', 'Сансевиерия', 'Коридор', 14, 11, '#E5E9D5', 4, 50, 'warm', { winter: true }],
+      ['peperomia', 'Пеперомия', 'Кабинет', 7, 3, '#E0EADB', 3, 41, 'warm', {}],
+      ['chloro', 'Хлорофитум', 'Кабинет', 5, 1, '#D9E8DD', 2, 16, 'all', { delivery: 'separate' }],
+      ['orchid', 'Орхидея', 'Кухня', 7, 2, '#EDE0E6', 2, 12, 'all', { from: 'calendar' }],
+      ['zz', 'Замиокулькас', 'Спальня', 14, 6, '#E2E8D8', 4, 60, 'warm', {}],
+      ['cactus', 'Кактус', 'Подоконник', 21, 10, '#E8E6D6', 4, 70, 'warm', { remind: false, winter: true }]
+    ];
+    var wsrc = ['голосом', 'вручную', 'голосом', 'голосом'];
+    var fsrc = ['вручную', 'голосом', 'вручную'];
+    var plants = list.map(function (r) {
+      var p = {
+        id: r[0], name: r[1], place: r[2], interval: r[3], last: r[4], tint: r[5],
+        fWeeks: r[6], fLast: r[7], season: r[8], feedOn: true,
+        remind: true, fRemind: true, from: 'last', winter: false, delivery: 'digest', time: '19:00'
+      };
+      p.hist = [0, 1, 2, 3].map(function (k) { return { off: r[4] + k * r[3], src: wsrc[k] }; });
+      p.fHist = [0, 1, 2].map(function (k) { return { off: r[7] + k * r[6] * 7, src: fsrc[k] }; });
+      return Object.assign(p, r[9]);
+    });
+    this.state = {
+      screen: this.screenFromProp(props && props.startScreen),
+      addFrom: 'hub',
+      plants: plants,
+      done: { water: {}, feed: {} },
+      undoDone: null,
+      openId: null,
+      cardTab: 'water',
+      voice: null,
+      voiceCtx: 'hub',
+      heard: 0,
+      checks: {},
+      amb: null,
+      when: 'now',
+      toast: null,
+      restOpen: { water: false, feed: false },
+      form: this.emptyForm(),
+      settings: { notif: true, digest: '09:00', evening: true, autoSave: true, theme: 'system' }
+    };
+    this.timers = [];
+    this.toastTimer = null;
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps && prevProps.startScreen !== this.props.startScreen) {
+      this.clearTimers();
+      this.setState({ screen: this.screenFromProp(this.props.startScreen), openId: null, voice: null });
+    }
+  }
+
+  componentWillUnmount() {
+    this.clearTimers();
+    clearTimeout(this.toastTimer);
+  }
+
+  screenFromProp(v) {
+    var map = { 'Главная': 'hub', 'Полив': 'water', 'Подкормка': 'feed', 'Добавление': 'add', 'Настройки': 'settings' };
+    return map[v] || 'hub';
+  }
+
+  emptyForm() {
+    return { name: '', room: null, interval: 7, lastWater: 'today', feedOn: true, feedWeeks: 2, feedSeason: 'warm', remind: true };
+  }
+
+  // ——— тексты и даты ———
+  plural(n, a, b, c) {
+    var m = Math.abs(n) % 100, k = m % 10;
+    if (m > 10 && m < 20) return c;
+    if (k > 1 && k < 5) return b;
+    if (k === 1) return a;
+    return c;
+  }
+  dayWord(n) { return n + ' ' + this.plural(n, 'день', 'дня', 'дней'); }
+  dayText(n) { return n === 1 ? 'день' : this.dayWord(n); }
+  weekText(n) { return n === 1 ? 'неделю' : n + ' ' + this.plural(n, 'неделю', 'недели', 'недель'); }
+  fmtDate(off) {
+    var months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
+    var d = new Date(2026, 9, 28);
+    d.setDate(d.getDate() + off);
+    return d.getDate() + ' ' + months[d.getMonth()];
+  }
+  rel(n) {
+    if (n <= 0) return 'сегодня';
+    if (n === 1) return 'завтра';
+    if (n === 2) return 'послезавтра';
+    return 'через ' + this.dayWord(n);
+  }
+  ago(n) {
+    if (n <= 0) return 'сегодня';
+    if (n === 1) return 'вчера';
+    return this.dayWord(n) + ' назад';
+  }
+  cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  nowHM() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  // ——— цвета и тема ———
+  hex(h) {
+    h = String(h).replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16) || 0; });
+  }
+  mix(a, b, w) {
+    var pa = this.hex(a), pb = this.hex(b);
+    return '#' + pa.map(function (v, i) {
+      return Math.round(v * (1 - w) + pb[i] * w).toString(16).padStart(2, '0');
+    }).join('');
+  }
+  isDark() {
+    var th = this.state.settings.theme;
+    if (th === 'dark') return true;
+    if (th === 'light') return false;
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); } catch (e) { return false; }
+  }
+  theme(accent) {
+    var self = this;
+    var fade = function (h) { return 'rgba(' + self.hex(h).join(', ') + ', 0)'; };
+    if (!this.isDark()) {
+      return {
+        dark: false, bg: '#F3F5F0', bgFade: fade('#F3F5F0'), surface: '#FFFFFF', ink: '#15211A', muted: '#56635A',
+        line: '#EEF1EC', ctrlBd: '#D5DDD3', soft: '#EDF0EA', scrim: 'rgba(21, 33, 26, 0.45)', trackOff: '#C3CCC4',
+        accentBtn: accent, accentText: accent, accentSoft: this.mix(accent, '#FFFFFF', 0.86),
+        orange: '#B4410F', orangeSoft: '#FBEFE6', orangeBd: '#F1D3C2', orangeInk: '#7A2E0A',
+        toastBg: '#15211A', toastFg: '#FFFFFF', toastAct: '#B9E3C6', handle: '#C9D3CA',
+        segEmpty: '#DCE3DA', segOverdue: '#EBC3AA', rowBd: '#E3E8E0', checkBd: '#C9D3CA',
+        segSel: '#FFFFFF', segShadow: '0 1px 3px rgba(21, 33, 26, 0.16)', reviewOn: this.mix(accent, '#FFFFFF', 0.9),
+        boxOffBd: '#B7C2B9', disabledBg: '#E3E8E0', disabledFg: '#56635A', placeholder: '#7D8A80',
+        tileBd: 'rgba(255, 255, 255, 0.5)',
+        shadow: '0 10px 24px rgba(21, 33, 26, 0.22)'
+      };
+    }
+    return {
+      dark: true, bg: '#0F1612', bgFade: fade('#0F1612'), surface: '#18221C', ink: '#E8EEE9', muted: '#A3B0A6',
+      line: '#26322B', ctrlBd: '#34423A', soft: '#212D26', scrim: 'rgba(0, 0, 0, 0.6)', trackOff: '#3E4C43',
+      accentBtn: this.mix(accent, '#FFFFFF', 0.12), accentText: this.mix(accent, '#FFFFFF', 0.55), accentSoft: this.mix(accent, '#18221C', 0.6),
+      orange: '#F0915C', orangeSoft: '#33211A', orangeBd: '#5A3320', orangeInk: '#F6B48E',
+      toastBg: '#E8EEE9', toastFg: '#15211A', toastAct: this.mix(accent, '#000000', 0.1), handle: '#3E4C43',
+      segEmpty: '#2A362F', segOverdue: '#7A4326', rowBd: '#26322B', checkBd: '#3E4C43',
+      segSel: '#2E3B33', segShadow: 'none', reviewOn: this.mix(accent, '#18221C', 0.7),
+      boxOffBd: '#4B5A50', disabledBg: '#26322B', disabledFg: '#A3B0A6', placeholder: '#808C83',
+      tileBd: 'rgba(255, 255, 255, 0.12)',
+      shadow: '0 10px 24px rgba(0, 0, 0, 0.4)'
+    };
+  }
+  tintFor(tint) { return this.isDark() ? this.mix(tint, '#18221C', 0.8) : tint; }
+  chip(selected, t) {
+    return selected ? { bg: t.accentBtn, fg: '#FFFFFF', bd: t.accentBtn } : { bg: t.surface, fg: t.ink, bd: t.ctrlBd };
+  }
+  seg(selected, t) {
+    return selected ? { bg: t.segSel, fg: t.ink, shadow: t.segShadow } : { bg: 'transparent', fg: t.muted, shadow: 'none' };
+  }
+  sw(on, t) { return { track: on ? t.accentBtn : t.trackOff, justify: on ? 'flex-end' : 'flex-start' }; }
+
+  // ——— данные ———
+  plant(id) { return this.state.plants.find(function (p) { return p.id === id; }); }
+  inSeasonNow() { var m = 9; return m >= 2 && m <= 8; } // сегодня 28 октября
+  paused(p) { return p.feedOn && p.season === 'warm' && !this.inSeasonNow(); }
+  fDue(p) { return p.fWeeks * 7 - p.fLast; }
+  updatePlant(id, patch) {
+    this.setState({ plants: this.state.plants.map(function (p) { return p.id === id ? Object.assign({}, p, patch) : p; }) });
+  }
+  setForm(patch) { this.setState({ form: Object.assign({}, this.state.form, patch) }); }
+  setSettings(patch) { this.setState({ settings: Object.assign({}, this.state.settings, patch) }); }
+  rooms() {
+    var out = [];
+    this.state.plants.forEach(function (p) { if (p.place && out.indexOf(p.place) < 0) out.push(p.place); });
+    return out;
+  }
+
+  // ——— навигация ———
+  go(screen) {
+    this.clearTimers();
+    this.setState({ screen: screen, openId: null, voice: null });
+  }
+  goAdd() {
+    var sc = this.state.screen;
+    this.clearTimers();
+    this.setState({ screen: 'add', addFrom: (sc === 'water' || sc === 'feed') ? sc : 'hub', form: this.emptyForm(), openId: null, voice: null, toast: null });
+  }
+
+  // ——— голос ———
+  isClear() { return (this.props.voiceScenario ?? 'С уточнением') === 'Всё понятно'; }
+  voiceSpec(ctx) {
+    var W = 'water', F = 'feed';
+    var mk = function (pairs) { return pairs.map(function (p) { return { kind: p[0], id: p[1] }; }); };
+    var amb = function (kind, opts) {
+      return { kind: kind, q: '«Фикус» — у вас их два. Какой ' + (kind === W ? 'полили?' : 'подкормили?'), options: opts };
+    };
+    var wOpts = [['ficusB', 'Бенджамина · спальня'], ['ficusL', 'Лировидный · кухня'], ['both', 'Оба']];
+    var fOpts = [['ficusL', 'Лировидный · ждёт подкормки'], ['ficusB', 'Бенджамина · спальня'], ['both', 'Оба']];
+    var clear = this.isClear();
+    if (ctx === W) {
+      return clear
+        ? { text: 'Полила монстеру и калатею', items: mk([[W, 'monstera'], [W, 'calathea']]), amb: null }
+        : { text: 'Полила монстеру, калатею и фикус', items: mk([[W, 'monstera'], [W, 'calathea']]), amb: amb(W, wOpts) };
+    }
+    if (ctx === F) {
+      return clear
+        ? { text: 'Подкормила хлорофитум и спатифиллум', items: mk([[F, 'chloro'], [F, 'spath']]), amb: null }
+        : { text: 'Подкормила хлорофитум и фикус', items: mk([[F, 'chloro']]), amb: amb(F, fOpts) };
+    }
+    return clear
+      ? { text: 'Полила монстеру, подкормила хлорофитум', items: mk([[W, 'monstera'], [F, 'chloro']]), amb: null }
+      : { text: 'Полила монстеру и калатею, подкормила фикус', items: mk([[W, 'monstera'], [W, 'calathea']]), amb: amb(F, fOpts) };
+  }
+  clearTimers() {
+    this.timers.forEach(function (x) { clearTimeout(x); clearInterval(x); });
+    this.timers = [];
+  }
+  startVoice() {
+    var sc = this.state.screen;
+    var ctx = (sc === 'water' || sc === 'feed') ? sc : 'hub';
+    var spec = this.voiceSpec(ctx);
+    var checks = {};
+    spec.items.forEach(function (m) { checks[m.kind + ':' + m.id] = true; });
+    this.clearTimers();
+    clearTimeout(this.toastTimer);
+    this.setState({ voiceCtx: ctx, voice: 'listen', heard: 0, checks: checks, amb: null, when: 'now', toast: null, openId: null });
+    var total = spec.text.split(' ').length;
+    var i = 0;
+    var iv = setInterval(() => {
+      i += 1;
+      this.setState({ heard: i });
+      if (i >= total) {
+        clearInterval(iv);
+        this.timers.push(setTimeout(() => this.finishListening(), 1100));
+      }
+    }, 340);
+    this.timers.push(iv);
+  }
+  finishListening() {
+    this.clearTimers();
+    if (this.state.voice !== 'listen') return;
+    var spec = this.voiceSpec(this.state.voiceCtx);
+    if (!spec.amb && this.state.settings.autoSave) this.commit(spec.items, 'now', 'голосом');
+    else this.setState({ voice: 'review', heard: 99 });
+  }
+  closeVoice() {
+    this.clearTimers();
+    this.setState({ voice: null });
+  }
+  reviewMarks() {
+    var s = this.state;
+    var spec = this.voiceSpec(s.voiceCtx);
+    var marks = spec.items.filter(function (m) { return s.checks[m.kind + ':' + m.id]; });
+    if (spec.amb && s.amb) {
+      var ids = s.amb === 'both' ? ['ficusB', 'ficusL'] : [s.amb];
+      ids.forEach(function (id) { marks.push({ kind: spec.amb.kind, id: id }); });
+    }
+    return marks;
+  }
+  confirmReview() {
+    var marks = this.reviewMarks();
+    if (!marks.length) return;
+    this.commit(marks, this.state.when, 'голосом');
+  }
+
+  // ——— отметки ———
+  commit(marks, when, src) {
+    var self = this;
+    var prev = this.state.done;
+    var next = { water: Object.assign({}, prev.water), feed: Object.assign({}, prev.feed) };
+    var label = when === 'yesterday' ? 'вчера' : (when === 'morning' ? 'сегодня утром' : 'в ' + this.nowHM());
+    marks.forEach(function (m) { next[m.kind][m.id] = { label: label, src: src, yesterday: when === 'yesterday' }; });
+    var names = function (kind) {
+      return marks.filter(function (m) { return m.kind === kind; }).map(function (m) { return self.plant(m.id).name; });
+    };
+    var wn = names('water'), fn = names('feed');
+    var text;
+    if (marks.length === 1) {
+      text = wn.length ? 'Полив отмечен: ' + wn[0] : 'Подкормка отмечена: ' + fn[0];
+    } else {
+      var parts = [];
+      if (wn.length) parts.push('Полив: ' + wn.join(', '));
+      if (fn.length) parts.push('Подкормка: ' + fn.join(', '));
+      text = parts.join(' · ');
+    }
+    this.setState({ done: next, voice: null });
+    this.showToast(text, prev);
+  }
+  toggleMark(kind, id) {
+    var prev = this.state.done;
+    if (prev[kind][id]) {
+      var next = { water: Object.assign({}, prev.water), feed: Object.assign({}, prev.feed) };
+      delete next[kind][id];
+      clearTimeout(this.toastTimer);
+      this.setState({ done: next, toast: null });
+      return;
+    }
+    this.commit([{ kind: kind, id: id }], 'now', 'вручную');
+  }
+  showToast(text, prevDone) {
+    clearTimeout(this.toastTimer);
+    this.setState({ toast: text, undoDone: prevDone });
+    this.toastTimer = setTimeout(() => this.setState({ toast: null }), 5000);
+  }
+  undo() {
+    clearTimeout(this.toastTimer);
+    if (this.state.undoDone) this.setState({ done: this.state.undoDone, toast: null, undoDone: null });
+    else this.setState({ toast: null });
+  }
+
+  // ——— добавление ———
+  submitAdd() {
+    var f = this.state.form;
+    if (!f.name.trim()) return;
+    var lastDays = { today: 0, yesterday: 1, week: 7, unknown: f.interval }[f.lastWater];
+    var p = {
+      id: 'new' + Date.now(), name: f.name.trim(), place: f.room || '', interval: f.interval, last: lastDays,
+      tint: this.nextTint(),
+      fWeeks: f.feedWeeks, fLast: 0, season: f.feedSeason, feedOn: f.feedOn,
+      remind: f.remind, fRemind: f.remind, from: 'last', winter: false, delivery: 'digest', time: '19:00',
+      hist: f.lastWater === 'unknown' ? [] : [{ off: lastDays, src: 'при добавлении' }],
+      fHist: []
+    };
+    clearTimeout(this.toastTimer);
+    this.setState({ plants: this.state.plants.concat([p]), form: this.emptyForm(), screen: this.state.addFrom });
+    this.showToast('Добавлено: ' + p.name, null);
+  }
+
+  nextTint() {
+    var tints = ['#DCEBDF', '#E3ECD3', '#D8E9E4', '#ECE5D3', '#DCE5EF', '#EDE0E6'];
+    return tints[this.state.plants.length % tints.length];
+  }
+
+  presetChips(current, onPick, t) {
+    var self = this;
+    return [[7, '7 дней'], [14, '14 дней'], [30, '1 мес.'], [180, '6 мес.']].map(function (o) {
+      var sel = current === o[0];
+      return Object.assign({ label: o[1], selected: sel, pick: function () { onPick(o[0]); } }, self.chip(sel, t));
+    });
+  }
+
+  // ——— сборка экранов ———
+  buildRows(kind, t) {
+    var self = this, s = this.state, isW = kind === 'water';
+    return s.plants.map(function (p) {
+      var rec = s.done[kind][p.id];
+      var off = !isW && !p.feedOn;
+      var pz = !isW && self.paused(p);
+      var due = isW ? p.interval - p.last : ((off || pz) ? 999 : self.fDue(p));
+      var lastN = isW ? p.last : p.fLast;
+      var tail = p.place ? ' · ' + p.place.toLowerCase() : '';
+      var sub, subColor = t.muted;
+      if (rec) { sub = (isW ? 'Полито ' : 'Подкормлено ') + rec.label; subColor = t.accentText; }
+      else if (off) sub = 'Не подкармливается' + tail;
+      else if (pz) sub = 'Пауза до марта' + tail;
+      else if (due < 0) { sub = 'Просрочено на ' + self.dayWord(-due) + tail; subColor = t.orange; }
+      else if (due === 0) {
+        var hasHist = isW ? p.hist.length > 0 : p.fHist.length > 0;
+        var what = hasHist ? (isW ? 'полив ' : 'подкормка ') + self.ago(lastN) : 'пора';
+        sub = p.place ? p.place + ' · ' + what : self.cap(what);
+      }
+      else sub = self.cap(self.rel(due)) + tail;
+      return {
+        id: p.id, name: p.name, tint: self.tintFor(p.tint), t: t, due: due, pz: pz || off,
+        sub: sub, subColor: subColor, done: !!rec, notDone: !rec, isWater: isW, isFeed: !isW,
+        border: (due < 0 && !rec) ? t.orangeBd : t.rowBd,
+        actLabel: (rec ? 'Отменить ' : 'Отметить ') + (isW ? 'полив: ' : 'подкормку: ') + p.name,
+        open: function () { self.setState({ openId: p.id, cardTab: kind }); },
+        toggle: function () { self.toggleMark(kind, p.id); }
+      };
+    });
+  }
+
+  listData(kind, t) {
+    var self = this, s = this.state, isW = kind === 'water';
+    var rows = this.buildRows(kind, t);
+    var byDue = function (a, b) { return a.due - b.due; };
+    var today = rows.filter(function (r) { return r.due <= 0; }).sort(byDue);
+    var soon = rows.filter(function (r) { return r.due >= 1 && r.due <= 3; }).sort(byDue);
+    var rest = rows.filter(function (r) { return r.due > 3; }).sort(byDue);
+    var N = today.length;
+    var D = today.filter(function (r) { return r.done; }).length;
+    var R = N - D;
+    var overdueLeft = today.filter(function (r) { return r.due < 0 && !r.done; }).length;
+    var pausedCount = rows.filter(function (r) { return r.pz; }).length;
+    var verb = isW ? 'полива' : 'подкормки';
+    var headline = R > 0
+      ? R + ' ' + this.plural(R, 'растение ждёт', 'растения ждут', 'растений ждут') + ' ' + verb
+      : (N > 0 ? (isW ? 'На сегодня всё полито' : 'На сегодня всё подкормлено') : (isW ? 'Сегодня поливать нечего' : 'Сегодня подкармливать нечего'));
+    var nextSoon = soon.filter(function (r) { return !r.done; })[0];
+    var subline;
+    if (R > 0) subline = D > 0 ? 'Готово ' + D + ' из ' + N : 'Отмечайте кнопкой справа или голосом';
+    else if (nextSoon) subline = 'Дальше — ' + nextSoon.name + ', ' + this.rel(nextSoon.due);
+    else subline = (!isW && pausedCount) ? 'Остальные на зимней паузе до марта' : 'Дальше всё по расписанию';
+    var segments = today.map(function (r) {
+      return { bg: r.done ? t.accentBtn : (r.due < 0 ? t.segOverdue : t.segEmpty) };
+    });
+    var sections = [];
+    if (N) sections.push({ title: isW ? 'Полить сегодня' : 'Подкормить сегодня', items: today, coll: false });
+    if (soon.length) sections.push({ title: 'Скоро', items: soon, coll: false });
+    if (rest.length) {
+      var allPaused = !isW && rest.every(function (r) { return r.pz; });
+      sections.push({ title: (allPaused ? 'На паузе до марта · ' : 'Остальные · ') + rest.length, items: rest, coll: true });
+    }
+    var open = s.restOpen[kind];
+    sections = sections.map(function (sec) {
+      return {
+        title: sec.title, items: sec.items, muted: t.muted,
+        isPlain: !sec.coll, isColl: sec.coll,
+        open: open, showItems: !sec.coll || open, rot: open ? 180 : 0,
+        toggle: function () {
+          var ro = Object.assign({}, self.state.restOpen);
+          ro[kind] = !ro[kind];
+          self.setState({ restOpen: ro });
+        }
+      };
+    });
+    return {
+      isWater: isW, isFeed: !isW, title: isW ? 'Полив' : 'Подкормка',
+      headline: headline, subline: subline, segments: segments, sections: sections,
+      N: N, R: R, D: D, overdueLeft: overdueLeft, pausedCount: pausedCount, nextSoon: nextSoon
+    };
+  }
+
+  hubTile(kind, L, t) {
+    var self = this, isW = kind === 'water';
+    return {
+      t: t, isWater: isW, isFeed: !isW, title: isW ? 'Полив' : 'Подкормка',
+      go: function () { self.go(kind); },
+      hasBig: L.R > 0, noBig: L.R === 0,
+      big: String(L.R),
+      bigLabel: this.plural(L.R, 'растение ждёт', 'растения ждут', 'растений ждут'),
+      doneText: L.N > 0 ? (isW ? 'Всё полито' : 'Всё подкормлено') : 'Сегодня ничего',
+      hasOverdue: L.overdueLeft > 0,
+      overdueText: 'Просрочено: ' + L.overdueLeft,
+      segments: L.segments, hasSegs: L.segments.length > 0,
+      bd: t.tileBd
+    };
+  }
+
+  formData(t) {
+    var self = this, s = this.state, f = s.form, st = s.settings;
+    var nm = f.name.trim().toLowerCase();
+    var first = nm.split(/\s+/)[0] || '';
+    var same = nm.length >= 3 ? s.plants.filter(function (p) { return p.name.toLowerCase().split(' ')[0] === first; }) : [];
+    var exact = same.some(function (p) { return p.name.toLowerCase() === nm; });
+    var warn = '';
+    if (exact) warn = 'Растение с таким названием уже есть. Добавьте отличие — например, место: «' + this.cap(first) + ' у окна».';
+    else if (same.length) warn = 'Уже есть: ' + same.map(function (p) { return p.name; }).join(', ') + '. Голосом называйте их полностью — или дайте этому растению другое имя.';
+    var lastDays = { today: 0, yesterday: 1, week: 7, unknown: f.interval }[f.lastWater];
+    var nextIn = f.interval - lastDays;
+    var lastHelp = f.lastWater === 'unknown'
+      ? 'Напомним проверить землю сегодня.'
+      : (nextIn <= 0 ? 'Пора полить уже сегодня.' : 'Следующий полив — ' + this.fmtDate(nextIn) + '.');
+    var feedHelp = f.feedSeason === 'warm' && !this.inSeasonNow()
+      ? 'Сейчас не сезон — первое напоминание придёт в марте.'
+      : 'Первое напоминание — ' + this.fmtDate(f.feedWeeks * 7) + ', дальше раз в ' + this.weekText(f.feedWeeks) + '.';
+    var disabled = !f.name.trim();
+    var upd = function (patch) { self.setForm(patch); };
+    return {
+      name: f.name,
+      onName: function (e) { upd({ name: e.target.value }); },
+      photoTint: this.tintFor(this.nextTint()),
+      hasWarn: !!warn, warn: warn, nameBd: warn ? t.orange : t.ctrlBd,
+      rooms: this.rooms().map(function (r) {
+        var sel = f.room === r;
+        return Object.assign({ label: r, selected: sel, pick: function () { upd({ room: sel ? null : r }); } }, self.chip(sel, t));
+      }),
+      intervalText: this.dayText(f.interval),
+      dec: function () { upd({ interval: Math.max(1, f.interval - 1) }); },
+      inc: function () { upd({ interval: Math.min(365, f.interval + 1) }); },
+      presets: this.presetChips(f.interval, function (d) { upd({ interval: d }); }, t),
+      lastOptions: [['today', 'Сегодня'], ['yesterday', 'Вчера'], ['week', 'Неделю назад'], ['unknown', 'Не помню']].map(function (o) {
+        var sel = f.lastWater === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { upd({ lastWater: o[0] }); } }, self.chip(sel, t));
+      }),
+      lastHelp: lastHelp,
+      feedOn: f.feedOn, feedSw: this.sw(f.feedOn, t),
+      toggleFeed: function () { upd({ feedOn: !f.feedOn }); },
+      weeksText: this.weekText(f.feedWeeks),
+      fdec: function () { upd({ feedWeeks: Math.max(1, f.feedWeeks - 1) }); },
+      finc: function () { upd({ feedWeeks: Math.min(12, f.feedWeeks + 1) }); },
+      seasonOptions: [['warm', 'Март — сентябрь'], ['all', 'Круглый год']].map(function (o) {
+        var sel = f.feedSeason === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { upd({ feedSeason: o[0] }); } }, self.seg(sel, t));
+      }),
+      feedHelp: feedHelp,
+      remind: f.remind, remindSw: this.sw(f.remind, t),
+      toggleRemind: function () { upd({ remind: !f.remind }); },
+      remindHelp: !f.remind
+        ? 'Без уведомлений: растение будет только в списках на главной.'
+        : (st.notif
+          ? 'Придёт в утренней сводке в ' + st.digest + '. Отдельное время можно задать в карточке растения.'
+          : 'Уведомления выключены в настройках приложения — растение всё равно будет в списках.'),
+      disabled: disabled,
+      btnLabel: disabled ? 'Укажите название' : 'Добавить растение',
+      btnBg: disabled ? t.disabledBg : t.accentBtn,
+      btnFg: disabled ? t.disabledFg : '#FFFFFF',
+      submit: function () { self.submitAdd(); }
+    };
+  }
+
+  settingsData(t) {
+    var self = this, st = this.state.settings;
+    var set = function (patch) { self.setSettings(patch); };
+    return {
+      notif: st.notif, notifOff: !st.notif, notifSw: this.sw(st.notif, t),
+      toggleNotif: function () { set({ notif: !st.notif }); },
+      digestOptions: ['08:00', '09:00', '10:00'].map(function (v) {
+        var sel = st.digest === v;
+        return Object.assign({ label: v, selected: sel, pick: function () { set({ digest: v }); } }, self.chip(sel, t));
+      }),
+      evening: st.evening, eveningSw: this.sw(st.evening, t),
+      toggleEvening: function () { set({ evening: !st.evening }); },
+      autoSave: st.autoSave, autoSw: this.sw(st.autoSave, t),
+      toggleAuto: function () { set({ autoSave: !st.autoSave }); },
+      autoHelp: st.autoSave
+        ? 'Если голос понял не всё, покажем экран проверки. Отменить можно в течение 5 секунд.'
+        : 'Перед сохранением всегда показывать экран проверки.',
+      themeOptions: [['system', 'Как в системе'], ['light', 'Светлая'], ['dark', 'Тёмная']].map(function (o) {
+        var sel = st.theme === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { set({ theme: o[0] }); } }, self.seg(sel, t));
+      }),
+      roomsCount: String(this.rooms().length)
+    };
+  }
+
+  cardData(t) {
+    var self = this, s = this.state;
+    var op = (s.openId && this.plant(s.openId)) || s.plants[0];
+    var isW = s.cardTab === 'water';
+    var kind = isW ? 'water' : 'feed';
+    var rec = s.done[kind][op.id];
+    var upd = function (patch) { self.updatePlant(op.id, patch); };
+    var c = {
+      name: op.name, place: op.place || 'Место не указано', tint: this.tintFor(op.tint), isWater: isW, isFeed: !isW,
+      tabs: [['water', 'Полив'], ['feed', 'Подкормка']].map(function (o) {
+        var sel = s.cardTab === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { self.setState({ cardTab: o[0] }); } }, self.seg(sel, t));
+      }),
+      mark: function () { self.toggleMark(kind, op.id); },
+      markBg: rec ? t.surface : t.accentBtn,
+      markFg: rec ? t.ink : '#FFFFFF',
+      markBd: rec ? t.ctrlBd : t.accentBtn,
+      deliveryOptions: [['digest', 'В утренней сводке'], ['separate', 'Отдельно']].map(function (o) {
+        var sel = op.delivery === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { upd({ delivery: o[0] }); } }, self.seg(sel, t));
+      }),
+      separate: op.delivery === 'separate',
+      timeOptions: ['08:00', '12:00', '19:00', '21:00'].map(function (v) {
+        var sel = op.time === v;
+        return Object.assign({ label: v, selected: sel, pick: function () { upd({ time: v }); } }, self.chip(sel, t));
+      }),
+      deliveryHelp: op.delivery === 'digest'
+        ? 'Одно уведомление в ' + s.settings.digest + ' со всеми делами на сегодня. Время сводки — в настройках.'
+        : 'Своё уведомление для этого растения в выбранное время:',
+      globalOff: !s.settings.notif
+    };
+    // значения по умолчанию для обеих вкладок, чтобы скрытые блоки всегда имели данные
+    Object.assign(c, {
+      feedOn: op.feedOn, feedSw: this.sw(op.feedOn, t), toggleFeed: function () {},
+      seasonOptions: [], seasonHelp: '',
+      fromOptions: [], fromHelp: '', presets: [],
+      winter: op.winter, winterSw: this.sw(op.winter, t), toggleWinter: function () {}, winterHelp: ''
+    });
+    var overdue = false;
+    var hist = isW ? op.hist : op.fHist;
+    if (isW) {
+      var due = op.interval - op.last;
+      var nextIn = rec ? (rec.yesterday ? op.interval - 1 : op.interval) : due;
+      overdue = nextIn < 0;
+      c.lastTitle = 'Последний полив';
+      c.lastValue = rec ? (rec.yesterday ? 'Вчера' : 'Сегодня') : (hist.length ? this.cap(this.ago(op.last)) : 'Неизвестно');
+      c.lastSub = rec ? 'отмечено ' + rec.src : (hist.length ? 'отмечено ' + hist[0].src : 'при добавлении');
+      c.nextValue = overdue ? 'Просрочено' : this.fmtDate(nextIn);
+      c.nextSub = overdue ? 'на ' + this.dayWord(-nextIn) : this.cap(this.rel(nextIn));
+      c.markLabel = rec ? 'Отменить полив' : 'Отметить полив';
+      c.showStepper = true;
+      c.stepLine = 'transparent';
+      c.stepLabel = 'Поливать раз в';
+      c.stepText = this.dayText(op.interval);
+      c.dec = function () { upd({ interval: Math.max(1, op.interval - 1) }); };
+      c.inc = function () { upd({ interval: Math.min(365, op.interval + 1) }); };
+      c.presets = this.presetChips(op.interval, function (d) { upd({ interval: d }); }, t);
+      c.fromOptions = [['last', 'От последнего полива'], ['calendar', 'По календарю']].map(function (o) {
+        var sel = op.from === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { upd({ from: o[0] }); } }, self.seg(sel, t));
+      });
+      c.fromHelp = op.from === 'last'
+        ? 'Полили раньше — следующее напоминание само сдвинется.'
+        : 'Напоминание придёт в те же дни, даже если полили раньше.';
+      c.winter = op.winter;
+      c.winterSw = this.sw(op.winter, t);
+      c.toggleWinter = function () { upd({ winter: !op.winter }); };
+      c.winterHelp = op.winter
+        ? 'С ноября по февраль — раз в ' + this.dayText(Math.round(op.interval * 1.5)) + '.'
+        : 'Интервал одинаковый весь год.';
+      c.isFeedOn = false;
+      c.remindTitle = 'Напоминать о поливе';
+      c.remind = op.remind;
+      c.toggleRemind = function () { upd({ remind: !op.remind }); };
+      c.histTitle = 'История поливов';
+    } else {
+      var pz = this.paused(op);
+      var fNext = rec ? op.fWeeks * 7 - (rec.yesterday ? 1 : 0) : this.fDue(op);
+      c.lastTitle = 'Последняя подкормка';
+      c.lastValue = rec ? (rec.yesterday ? 'Вчера' : 'Сегодня') : (hist.length ? this.cap(this.ago(op.fLast)) : 'Не отмечали');
+      c.lastSub = rec ? 'отмечено ' + rec.src : (hist.length ? 'отмечено ' + hist[0].src : 'после добавления');
+      if (!op.feedOn) { c.nextValue = '—'; c.nextSub = 'Подкормка выключена'; }
+      else if (pz) { c.nextValue = '1 мар'; c.nextSub = 'Зимняя пауза'; }
+      else {
+        overdue = fNext < 0;
+        c.nextValue = overdue ? 'Просрочено' : this.fmtDate(fNext);
+        c.nextSub = overdue ? 'на ' + this.dayWord(-fNext) : this.cap(this.rel(fNext));
+      }
+      c.markLabel = rec ? 'Отменить подкормку' : 'Отметить подкормку';
+      c.feedOn = op.feedOn;
+      c.feedSw = this.sw(op.feedOn, t);
+      c.toggleFeed = function () { upd({ feedOn: !op.feedOn }); };
+      c.showStepper = op.feedOn;
+      c.stepLine = t.line;
+      c.stepLabel = 'Подкармливать раз в';
+      c.stepText = this.weekText(op.fWeeks);
+      c.dec = function () { upd({ fWeeks: Math.max(1, op.fWeeks - 1) }); };
+      c.inc = function () { upd({ fWeeks: Math.min(12, op.fWeeks + 1) }); };
+      c.isFeedOn = op.feedOn;
+      c.seasonOptions = [['warm', 'Март — сентябрь'], ['all', 'Круглый год']].map(function (o) {
+        var sel = op.season === o[0];
+        return Object.assign({ label: o[1], selected: sel, pick: function () { upd({ season: o[0] }); } }, self.seg(sel, t));
+      });
+      c.seasonHelp = op.season === 'warm'
+        ? 'С октября по февраль напоминания на паузе — большинство растений зимой отдыхают.'
+        : 'Напоминания весь год. Зимой обычно подкармливают реже — можно увеличить интервал.';
+      c.remindTitle = 'Напоминать о подкормке';
+      c.remind = op.fRemind;
+      c.toggleRemind = function () { upd({ fRemind: !op.fRemind }); };
+      c.histTitle = 'История подкормок';
+    }
+    c.remindOff = !c.remind;
+    c.remindSw = this.sw(c.remind, t);
+    c.nextColor = overdue ? t.orange : t.ink;
+    c.nextSubColor = overdue ? t.orange : t.muted;
+    var history = [];
+    if (rec) history.push({ date: rec.yesterday ? this.fmtDate(-1) : 'Сегодня', src: rec.src });
+    hist.forEach(function (h) {
+      if (rec && rec.yesterday && h.off === 1) return;
+      history.push({ date: self.fmtDate(-h.off), src: h.src });
+    });
+    if (!history.length) history.push({ date: 'Пока нет записей', src: '' });
+    c.history = history.map(function (h, i) {
+      return { date: h.date, src: h.src, line: i === 0 ? 'transparent' : t.line, ink: t.ink, muted: t.muted };
+    });
+    return c;
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var accent = this.props.accent ?? '#1F5A3A';
+    var t = this.theme(accent);
+    var screen = s.screen;
+
+    var wl = this.listData('water', t);
+    var fl = this.listData('feed', t);
+    var ls = screen === 'feed' ? fl : wl;
+
+    // голос
+    var spec = this.voiceSpec(s.voiceCtx);
+    var words = spec.text.split(' ');
+    var shown = words.slice(0, s.heard).join(' ');
+    var hs = [12, 20, 30, 16, 26, 34, 18, 28, 14, 24, 32, 20, 16, 30, 24, 12, 22, 34, 18, 28, 16, 22];
+    var bars = hs.map(function (h, i) { return { h: h, d: (i * 70) % 900, c: t.accentBtn }; });
+    var reviewItems = spec.items.map(function (m) {
+      var p = self.plant(m.id);
+      var key = m.kind + ':' + m.id;
+      var on = !!s.checks[key];
+      return {
+        name: p.name, sub: (m.kind === 'water' ? 'Полив' : 'Подкормка') + ' · ' + p.place.toLowerCase(),
+        tint: self.tintFor(p.tint), ac: t.accentText, ink: t.ink, muted: t.muted, checked: on,
+        bg: on ? t.reviewOn : t.surface, bd: on ? t.accentBtn : t.ctrlBd,
+        boxBg: on ? t.accentBtn : t.surface, boxBd: on ? t.accentBtn : t.boxOffBd,
+        toggle: function () {
+          var c = Object.assign({}, self.state.checks);
+          c[key] = !on;
+          self.setState({ checks: c });
+        }
+      };
+    });
+    var ambOptions = spec.amb ? spec.amb.options.map(function (o) {
+      var sel = s.amb === o[0];
+      return Object.assign({ label: o[1], selected: sel, pick: function () { self.setState({ amb: sel ? null : o[0] }); } }, self.chip(sel, t));
+    }) : [];
+    var whenOptions = [['now', 'Сейчас'], ['morning', 'Утром'], ['yesterday', 'Вчера']].map(function (o) {
+      var sel = s.when === o[0];
+      return Object.assign({ label: o[1], selected: sel, pick: function () { self.setState({ when: o[0] }); } }, self.chip(sel, t));
+    });
+    var rm = this.reviewMarks();
+    var count = rm.length;
+    var kinds = rm.map(function (m) { return m.kind; }).filter(function (k, i, a) { return a.indexOf(k) === i; });
+    var countWord = kinds.length === 1
+      ? (kinds[0] === 'water' ? this.plural(count, 'полив', 'полива', 'поливов') : this.plural(count, 'подкормку', 'подкормки', 'подкормок'))
+      : this.plural(count, 'действие', 'действия', 'действий');
+    var hints = {
+      hub: 'Скажите, что полили или подкормили. Например: «полила монстеру, подкормила орхидею».',
+      water: 'Назовите растения, которые полили. Можно добавить «вчера» или сказать «всё в гостиной».',
+      feed: 'Назовите растения, которые подкормили. Можно добавить «вчера».'
+    };
+    var labels = { hub: 'Отметить голосом', water: 'Наговорить полив', feed: 'Наговорить подкормку' };
+    var n = s.plants.length;
+
+    return {
+      t: t,
+      isHub: screen === 'hub',
+      isList: screen === 'water' || screen === 'feed',
+      isAdd: screen === 'add',
+      isSettings: screen === 'settings',
+      showBar: screen === 'hub' || screen === 'water' || screen === 'feed',
+
+      hub: {
+        count: n + ' ' + this.plural(n, 'растение', 'растения', 'растений'),
+        tiles: [this.hubTile('water', wl, t), this.hubTile('feed', fl, t)]
+      },
+      ls: ls,
+      form: this.formData(t),
+      st: this.settingsData(t),
+
+      goHub: function () { self.go('hub'); },
+      goAdd: function () { self.goAdd(); },
+      goSettings: function () { self.go('settings'); },
+      cancelAdd: function () { self.go(self.state.addFrom); },
+
+      hasToast: !!s.toast,
+      toastText: s.toast || '',
+      hasUndo: !!s.undoDone,
+      undo: function () { self.undo(); },
+      voiceLabel: labels[(screen === 'water' || screen === 'feed') ? screen : 'hub'],
+      startVoice: function () { self.startVoice(); },
+
+      voiceOpen: !!s.voice,
+      listening: s.voice === 'listen',
+      reviewing: s.voice === 'review',
+      closeVoice: function () { self.closeVoice(); },
+      finishListening: function () { self.finishListening(); },
+      bars: bars,
+      transcriptShown: shown || 'Говорите…',
+      transcriptColor: shown ? t.ink : t.placeholder,
+      transcriptFull: spec.text,
+      voiceHint: hints[s.voiceCtx] || hints.hub,
+      reviewItems: reviewItems,
+      hasAmb: !!spec.amb,
+      ambQ: spec.amb ? spec.amb.q : '',
+      ambOptions: ambOptions,
+      whenOptions: whenOptions,
+      confirmLabel: count > 0 ? 'Отметить ' + count + ' ' + countWord : 'Нечего отмечать',
+      confirmBg: count > 0 ? t.accentBtn : t.disabledBg,
+      confirmFg: count > 0 ? '#FFFFFF' : t.disabledFg,
+      confirmDisabled: count === 0,
+      confirmReview: function () { self.confirmReview(); },
+
+      cardOpen: !!s.openId,
+      closeCard: function () { self.setState({ openId: null }); },
+      card: this.cardData(t)
+    };
+  }
+}
+</script>
+</body>
+</html>
